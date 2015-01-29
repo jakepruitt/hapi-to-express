@@ -1,6 +1,6 @@
 # hapi-to-express
 
-This module returns a function that creates mocked Express request and response objects that internally call the Hapi objects passed into the function.
+This module creates mocked Express request and response objects that internally call the Hapi request and reply objects .
 
 ## Usage
 
