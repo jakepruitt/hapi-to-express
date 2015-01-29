@@ -1,72 +1,70 @@
-/**********************************************
- * hapi-seneca
- * -----------
+/******************************************************
+ * hapi-to-express
+ * ---------------
  *
- * This module returns a Hapi plugin that
- * allows seneca-web functionality to work
- * as expected in the Hapi framework.
+ * This module returns a function that creates
+ * mocked Express request and response objects
+ * that internally call the Hapi objects passed
+ * to the function.
  *
  * @params
- *      When used with framework, the options
- *      object should have the `seneca` option
- *      referencing the seneca instance that 
- *      any seneca-web actions have been called
- *      on.
- *      The `cors` option should be set to true
- *      if the API is to be accessed by other
- *      websites.
- *
+ *      request: a Hapi request object, ideally
+ *               within a 'onPostAuth' server
+ *               extension point so that 
+ *               `request.payload` can be read
+ *               and written to.
+ *      reply:   a Hapi reply object, also hopefully
+ *               in the 'onPostAuth' extension point.
  * @returns
- *      A Hapi plugin that can be registered
- *      to a hapi instance with:
- *      server.register({
- *        register: require('./hapi-seneca');
- *        options: {
- *          seneca: seneca,
- *          cors: true
- *        }
- *      }, cb);
+ *      { res: ..., req: ... } - an object where `res`
+ *      represents an Express response object and `req`
+ *      represents an Express request object. Very limited
+ *      API at the moment
  *
- * Note: most of the logic for this app
- *      lies in the 'hapi-to-express' module.
- *********************************************/
+ * Notes: currently supporting a limited API based on
+ *      Hapi 8.* and Express 4.* APIs
+ ******************************************************/
+var hapiToExpress = function hapiToExpress(request, reply) {
+  var res, req, headers = {}, status = 200;
 
-var hapiToExpress = require('./hapi-to-express');
+  req = request.raw.req;
+  req.body = request.payload;
+  req.query = request.query;
 
-var hapiSeneca = {
-  register: function (server, options, next) {
-    var seneca = options.seneca;
+  res = {
+    getHeader: function(headerName) {
+      return headers[headerName];
+    },
 
-    // Create Hapi Default route handler
-    var handler = function (request, reply) {
-      return reply('The page was not found').code(404);
-    };
+    setHeader: function(headerName, headerValue) {
+      headers[headerName] = headerValue;
+    },
 
-    // Allow CORS based on cors option for plugin
-    server.route({ 
-      method: '*', 
-      path: '/{p*}', 
-      handler: handler, 
-      config: { cors: options.cors }
-    });
-    
-    server.ext('onPostAuth', function(request, reply) {
-      var hapress = hapiToExpress(request, reply);
+    writeHead: function(resStatus, resHeader) {
+      for (var header in resHeader) {
+        if (resHeader.hasOwnProperty(header)) {
+          headers[header] = resHeader[header];
+        }
+      }
+      status = resStatus;
+    },
 
-      seneca.export('web')(hapress.req, hapress.res, function(err) {
-        if (err) { return reply(err); }
-        reply.continue();
-      });
-    });
+    end: function(obstr) {
+      var res = reply(obstr)
 
+      res.code(status);
+      for (header in headers) {
+        if (headers.hasOwnProperty(header)) {
+          res.header(header, headers[header]);
+        }
+      }
+    }
+  };
 
-    next();
-  }
+  return {
+    res: res,
+    req: req
+  };
 };
 
-hapiSeneca.register.attributes = {
-  name: 'hapi-seneca',
-  version: '1.0.0'
-};
-
-module.exports = hapiSeneca;
+module.exports = hapiToExpress;
