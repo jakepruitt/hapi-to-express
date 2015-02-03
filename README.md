@@ -2,6 +2,9 @@
 
 This module creates mocked Express request and response objects that internally call the Hapi request and reply objects .
 
+[![NPM](https://nodei.co/npm/hapi-to-express.png)](https://nodei.co/npm/hapi-to-express/)
+[![NPM](https://nodei.co/npm-dl/hapi-to-express.png)](https://nodei.co/npm-dl/hapi-to-express/)
+
 ## Usage
 
 ### params
