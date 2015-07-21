@@ -1,6 +1,6 @@
 {
   "name": "hapi-to-express",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Create Express.js response and request objects that bind to Hapi request and reply objects",
   "main": "index.js",
   "scripts": {
@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/jrpruit1/hapi-to-express/issues"
   },
-  "homepage": "https://github.com/jrpruit1/hapi-to-express"
+  "homepage": "https://github.com/jrpruit1/hapi-to-express",
+  "dependencies": {
+    "through2": "^2.0.0"
+  }
 }
