@@ -41,17 +41,17 @@ var hapiToExpress = function hapiToExpress(request, reply) {
 
   res = {
     getHeader: function(headerName) {
-      return headers[headerName];
+      return headers[headerName.toLowerCase()];
     },
 
     setHeader: function(headerName, headerValue) {
-      headers[headerName] = headerValue;
+      headers[headerName.toLowerCase()] = headerValue;
     },
 
     writeHead: function(resStatus, resHeader) {
       for (var header in resHeader) {
         if (resHeader.hasOwnProperty(header)) {
-          headers[header] = resHeader[header];
+          res.setHeader(header, resHeader[header]);
         }
       }
       status = resStatus;
