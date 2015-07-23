@@ -81,6 +81,15 @@ var hapiToExpress = function hapiToExpress(request, reply) {
       responseStream.write.apply(responseStream, arguments);
     },
 
+    redirect: function() {
+      if (typeof arguments[0] === 'string') {
+        reply.redirect(arguments[0]);
+      }
+      else {
+        reply.redirect(arguments[1]).code(arguments[0]);
+      }
+    },
+
     // // Untested
     // on: function() {		
     //   createStream();
