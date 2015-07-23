@@ -24,11 +24,19 @@
  * Notes: currently supporting a limited API based on
  *      Hapi 8.* and Express 4.* APIs
  ******************************************************/
+var through = require('through2');
+
 var hapiToExpress = function hapiToExpress(request, reply) {
-  var res, req, headers = {}, status = 200;
+  var res, req, responseStream, headers = {}, status = 200;
+
+  function createStream () {
+      if (responseStream) return;
+      responseStream = through();
+      responseStream.on('error', reply);
+  }
 
   req = request.raw.req;
-  req.body = request.payload;
+  req.body = request.payload || {};
   req.query = request.query;
 
   res = {
@@ -49,16 +57,37 @@ var hapiToExpress = function hapiToExpress(request, reply) {
       status = resStatus;
     },
 
-    end: function(obstr) {
-      var res = reply(obstr)
+    end: function() {
+      var response;
 
-      res.code(status);
+      if (responseStream) {
+        responseStream.end.apply(responseStream, arguments);
+        response = reply(responseStream);
+      }
+      else {
+	response = reply(arguments[0]);
+      }
+
+      response.code(status);
       for (header in headers) {
         if (headers.hasOwnProperty(header)) {
-          res.header(header, headers[header]);
+          response.header(header, headers[header]);
         }
       }
-    }
+    },
+
+    write: function() {
+      createStream();
+      responseStream.write.apply(responseStream, arguments);
+    },
+
+    // // Untested
+    // on: function() {		
+    //   createStream();
+    //   // TODO some events (like end) can be triggered even when not using the stream as a response.
+    //   s.on.apply(responseStream, arguments);
+    // }
+
   };
 
   return {
