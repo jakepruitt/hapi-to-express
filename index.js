@@ -10,7 +10,7 @@
  * @params
  *      request: a Hapi request object, ideally
  *               within a 'onPostAuth' server
- *               extension point so that 
+ *               extension point so that
  *               `request.payload` can be read
  *               and written to.
  *      reply:   a Hapi reply object, also hopefully
@@ -46,6 +46,9 @@ var hapiToExpress = function hapiToExpress(request, reply) {
 
     setHeader: function(headerName, headerValue) {
       headers[headerName.toLowerCase()] = headerValue;
+    },
+    removeHeader: function(headerName) {
+      delete headers[headerName.toLowerCase()]
     },
 
     writeHead: function(resStatus, resHeader) {
@@ -91,7 +94,7 @@ var hapiToExpress = function hapiToExpress(request, reply) {
     },
 
     // // Untested
-    // on: function() {		
+    // on: function() {
     //   createStream();
     //   // TODO some events (like end) can be triggered even when not using the stream as a response.
     //   s.on.apply(responseStream, arguments);
